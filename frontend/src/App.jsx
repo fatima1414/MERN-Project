@@ -4,11 +4,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Api from "./Api";
 
 const App = () => {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      category: "",
+      title: "",
+    },
+  });
+
   const [tasks, setTasks] = useState([]);
   const [editId, setEditId] = useState(null);
 
-  // ADD TASK
+  // ADD & UPDATE TASK
   const Add = async (data) => {
     try {
       if (editId) {
@@ -19,7 +25,13 @@ const App = () => {
         await Api.post("/task", data);
         alert("Task Inserted");
       }
-      reset();
+
+      // ✅ force empty form
+      reset({
+        category: "",
+        title: "",
+      });
+
       showApi();
     } catch (error) {
       console.log(error);
@@ -54,8 +66,6 @@ const App = () => {
   // EDIT TASK
   const EditTask = (task) => {
     setEditId(task._id);
-    // setValue("category", task.category);
-    // setValue("title", task.title);
     reset({
       category: task.category,
       title: task.title,
@@ -73,7 +83,6 @@ const App = () => {
           <div className="mb-3">
             <input
               className="form-control"
-              type="text"
               {...register("category", { required: true })}
               placeholder="Enter Category"
             />
@@ -82,7 +91,6 @@ const App = () => {
           <div className="mb-3">
             <input
               className="form-control"
-              type="text"
               {...register("title", { required: true })}
               placeholder="Enter Title"
             />
@@ -94,11 +102,10 @@ const App = () => {
         </form>
       </div>
 
-      {/* TABLE SHOW LIST */}
       <div className="card mt-4 shadow p-3">
         <h4 className="text-center">Task List</h4>
 
-        <table className="table mt-3 table-bordered text-center">
+        <table className="table table-bordered text-center mt-3">
           <thead>
             <tr>
               <th>Category</th>
@@ -108,7 +115,7 @@ const App = () => {
           </thead>
 
           <tbody>
-            {tasks.length > 0 ? (
+            {tasks.length ? (
               tasks.map((t) => (
                 <tr key={t._id}>
                   <td>{t.category}</td>
@@ -120,7 +127,6 @@ const App = () => {
                     >
                       Edit
                     </button>
-
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => DeleteTask(t._id)}
