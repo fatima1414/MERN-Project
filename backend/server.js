@@ -16,12 +16,12 @@ app.get('/',(req,res)=>{
 
 // ...........import routing..........//
 const taskRoute = require('./routes/taskRoute')
-const BlogRoute  = require('./routes/blog.route')
+
 
 
 // .......setup api roting...........//
 app.use('/api/task',taskRoute)
-app.use('/api/blog',BlogRoute)
+
 
 
 
