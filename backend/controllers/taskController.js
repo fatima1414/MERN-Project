@@ -10,14 +10,14 @@ const Store = async (req, res) => {
 };
 const View = async (req, res) => {
   const tasks = await Task.find();
-  // res.json({
-  //   success: true,
-  //   records,
-  // });
   res.json({
     success: true,
-    tasks,
+    records,
   });
+  // res.json({
+  //   success: true,
+  //   tasks,
+  // });
 };
 
 const Delete = async (req, res) => {
