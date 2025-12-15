@@ -57,3 +57,16 @@ exports.trash = async(req,res)=>{
     }
 
 }
+
+exports.update = async (req,res)=>{
+    const {id} = req.query
+    const { b_title, b_category, b_desc } = req.body;
+    // console.log(req.file)
+    // console.log(id)
+    // console.log(req.body)
+    await Blog.findByIdAndUpdate(id,{ b_title, b_category, b_desc,b_image:req?.file?.filename})
+    res.json({
+        success:true,
+        message:"blog  has been updated"
+    })
+}

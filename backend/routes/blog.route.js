@@ -12,6 +12,7 @@ router
 .route('/')
 .post(upload.single('b_image'),BlogController.store)
 .get(BlogController.index)
+.put(upload.single('b_image'),BlogController.update)
 
 
 

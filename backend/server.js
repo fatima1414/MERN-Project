@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
 const taskRoute = require("./routes/taskRoute");
 const BlogRoute = require("./routes/blog.route");
 
-// .......setup api roting...........//
+// .......setup api roting...........//+
 app.use("/api/task", taskRoute);
 app.use("/api/blog", BlogRoute);
 

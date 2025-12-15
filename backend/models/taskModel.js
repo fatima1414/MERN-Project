@@ -11,7 +11,13 @@ const taskSchema = new Schema({
     trim: true,
     required: [true,"title required"],
   },
-});
+  task_image:{
+    type:[String]
+  }
+},
+  {
+    timestamps:true
+  });
 
 const Task = model("Task", taskSchema);
 module.exports = Task;

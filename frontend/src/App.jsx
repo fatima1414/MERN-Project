@@ -1,150 +1,121 @@
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import  { useEffect, useState } from "react";
+import {  useForm } from "react-hook-form";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Api from "./Api";
+import ImageList from "./ImageList";
 
 const App = () => {
-  const { register, handleSubmit, reset } = useForm({
-    defaultValues: {
-      category: "",
-      title: "",
-    },
-  });
-
-  const [tasks, setTasks] = useState([]);
-  const [editId, setEditId] = useState(null);
-
-  // ADD & UPDATE TASK
-  const Add = async (data) => {
-    try {
-      if (editId) {
-        await Api.patch(`/task/${editId}`, data);
-        alert("Task Updated");
-        setEditId(null);
-      } else {
-        await Api.post("/task", data);
-        alert("Task Inserted");
-      }
-
-      // ✅ force empty form
-      reset({
-        category: "",
-        title: "",
-      });
-
-      showApi();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // VIEW TASK LIST
-  const showApi = async () => {
-    try {
-      const res = await Api.get("/task");
-      setTasks(res.data.tasks);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const { register, reset, handleSubmit } = useForm();
+  const [taskList, setBlog] = useState([]);
+  async function Add(data) {
+    const formData = new FormData();
+   const images = data.task_image;
+   for (var i in images){
+     formData.append("task_image", images[i]);
+   }
+    formData.append("category", data.category);
+    formData.append("title", data.title);
+      await Api.post("/task", formData);
+      alert("inserted");     
+     reset({
+       category:"", 
+       title:"",
+       task_image:""
+      
+    });
+  }
+  async function showApi() {
+    const res = await Api.get("/task");
+    console.log(res.data.records);
+    setBlog(res.data.records);
+  }
 
   useEffect(() => {
     showApi();
   }, []);
 
-  // DELETE TASK
-  const DeleteTask = async (id) => {
-    try {
-      await Api.delete(`/task/${id}`);
-      alert("Task Deleted");
-      showApi();
-    } catch (error) {
-      console.log(error);
-    }
+  // async function trash(id) {
+  //   await Api.delete(`/blog/${id}`);
+  //   alert("deleted");
+  //   showApi();
+  // }
+
+  const formatDate = (date) => {
+    return new Date(date).toDateString();
   };
 
-  // EDIT TASK
-  const EditTask = (task) => {
-    setEditId(task._id);
-    reset({
-      category: task.category,
-      title: task.title,
-    });
-  };
+  // function update(id){
+  //   setId(id)
+  //   const singleBlog = blogs.find(blog=>blog._id==id)
+  //   console.log(singleBlog.b_image)
+  //   const image =`${import.meta.env.VITE_IMAGE_URL}/${singleBlog.b_image}`
+  //   setImage(image)
+  //   reset(singleBlog)
+  // }
 
   return (
-    <div className="container mt-5">
-      <div className="card shadow p-4">
-        <h3 className="text-center mb-3">
-          {editId ? "Update Task" : "Add Task"}
-        </h3>
+    <>
+      <div className="container mt-5">
+        <div className="card shadow p-4">
+          <form action="" encType="multipart/form-data" onSubmit={handleSubmit(Add)} >
+            <div className="mb-3">
+              <input type="text" className="form-control" {...register("category")} placeholder="Enter category" />
+            </div>
 
-        <form onSubmit={handleSubmit(Add)}>
-          <div className="mb-3">
-            <input
-              className="form-control"
-              {...register("category", { required: true })}
-              placeholder="Enter Category"
-            />
-          </div>
+            <div className="mb-3">
+              <input  type="text"  className="form-control"  {...register("title")}  placeholder="Enter title"/>
+            </div>
 
-          <div className="mb-3">
-            <input
-              className="form-control"
-              {...register("title", { required: true })}
-              placeholder="Enter Title"
-            />
-          </div>
-
-          <button className="btn btn-primary w-100" type="submit">
-            {editId ? "Update" : "Submit"}
-          </button>
-        </form>
+            <div className="mb-3">
+              <input type="file" className="form-control" {...register("task_image")} accept="image/*" multiple />
+            </div>
+           
+              <button className="btn btn-primary w-100" type="submit"> submit</button>
+             
+            
+          </form>
+        </div>
       </div>
+      <br />
+      <table className="table table-bordered table-success">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>title</th>
+            <th>category</th>
+            <th>image</th>
+            <th>createdAt</th>
+            <th>updatedAt</th>
+            <th>Action</th>
+          </tr>
+        </thead>
 
-      <div className="card mt-4 shadow p-3">
-        <h4 className="text-center">Task List</h4>
-
-        <table className="table table-bordered text-center mt-3">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Title</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {tasks.length ? (
-              tasks.map((t) => (
-                <tr key={t._id}>
-                  <td>{t.category}</td>
-                  <td>{t.title}</td>
-                  <td>
-                    <button
-                      className="btn btn-success btn-sm me-2"
-                      onClick={() => EditTask(t)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => DeleteTask(t._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3">No Records Found</td>
+        <tbody>
+          {taskList &&
+            taskList.map((task, index) => (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>{task.category}</td>
+                <td>{task.title}</td>
+                {/* <td>
+                  {
+                    task.task_image.map((ele,index)=>(
+                      <img key={index} className="p-3" src={`${import.meta.env.VITE_IMAGE_URL}/${ele}`}  width="80"  height="80"  alt="" />
+                    ))
+                  }
+                </td> */}
+                <ImageList images={task.task_image}/>
+                <td>{formatDate(task.createdAt)}</td>
+                <td>{formatDate(task.updatedAt)}</td>
+                <td className="text-center">
+                  <button className="btn btn-danger btn-sm me-2 p-3 mt-2" onClick={() => trash(task._id)}>delete</button>
+                  <button className="btn btn-warning btn-sm p-3 mt-2" onClick={() => update(task._id)}>update</button>
+                </td>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            ))}
+        </tbody>
+      </table>
+    </>
   );
 };
 
