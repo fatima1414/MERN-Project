@@ -104,6 +104,7 @@ const App = () => {
                     ))
                   }
                 </td> */}
+                {console.log(task.task_image)}
                 <ImageList images={task.task_image}/>
                 <td>{formatDate(task.createdAt)}</td>
                 <td>{formatDate(task.updatedAt)}</td>
