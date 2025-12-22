@@ -1,122 +1,94 @@
-import  { useEffect, useState } from "react";
-import {  useForm } from "react-hook-form";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import Api from "./Api";
 import ImageList from "./ImageList";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const App = () => {
-  const { register, reset, handleSubmit } = useForm();
-  const [taskList, setBlog] = useState([]);
-  async function Add(data) {
-    const formData = new FormData();
-   const images = data.task_image;
-   for (var i in images){
-     formData.append("task_image", images[i]);
-   }
-    formData.append("category", data.category);
-    formData.append("title", data.title);
-      await Api.post("/task", formData);
-      alert("inserted");     
-     reset({
-       category:"", 
-       title:"",
-       task_image:""
-      
-    });
-  }
-  async function showApi() {
-    const res = await Api.get("/task");
-    console.log(res.data.records);
-    setBlog(res.data.records);
-  }
+  const { register, handleSubmit, reset } = useForm();
+  const [movieList, setMovieList] = useState([]);
+  const [editId, setEditId] = useState("");
 
-  useEffect(() => {
-    showApi();
-  }, []);
+  useEffect(() => { fetchMovies(); }, []);
 
-  // async function trash(id) {
-  //   await Api.delete(`/blog/${id}`);
-  //   alert("deleted");
-  //   showApi();
-  // }
-
-  const formatDate = (date) => {
-    return new Date(date).toDateString();
+  const fetchMovies = async () => {
+    const res = await Api.get("/movie");
+    setMovieList(res.data.records);
   };
 
-  // function update(id){
-  //   setId(id)
-  //   const singleBlog = blogs.find(blog=>blog._id==id)
-  //   console.log(singleBlog.b_image)
-  //   const image =`${import.meta.env.VITE_IMAGE_URL}/${singleBlog.b_image}`
-  //   setImage(image)
-  //   reset(singleBlog)
-  // }
+  const Add = async (data) => {
+    const formData = new FormData();
+
+    Object.keys(data).forEach((key) => {
+      if (key !== "movie_image") formData.append(key, data[key]);
+    });
+
+    for (let img of data.movie_image || []) {
+      formData.append("movie_image", img);
+    }
+
+    editId
+      ? await Api.patch(`/movie?id=${editId}`, formData)
+      : await Api.post("/movie", formData);
+
+    reset();
+    setEditId("");
+    fetchMovies();
+  };
+
+  const editMovie = (m) => {
+    setEditId(m._id);
+    reset(m);
+  };
+
+  const deleteMovie = async (id) => {
+    await Api.delete(`/movie/${id}`);
+    fetchMovies();
+  };
 
   return (
-    <>
-      <div className="container mt-5">
-        <div className="card shadow p-4">
-          <form action="" encType="multipart/form-data" onSubmit={handleSubmit(Add)} >
-            <div className="mb-3">
-              <input type="text" className="form-control" {...register("category")} placeholder="Enter category" />
-            </div>
+    <div className="container my-5">
+      <form onSubmit={handleSubmit(Add)} className="card p-4 shadow">
+        <input {...register("category")} placeholder="Category" className="form-control mb-2"/>
+        <input {...register("title")} placeholder="Title" className="form-control mb-2"/>
+        <input {...register("director")} placeholder="Director" className="form-control mb-2"/>
+        <input {...register("language")} placeholder="Language" className="form-control mb-2"/>
+        <input {...register("releaseYear")} type="number" placeholder="Release Year" className="form-control mb-2"/>
+        <input {...register("rating")} type="number" step="0.1" placeholder="Rating" className="form-control mb-2"/>
+        <textarea {...register("description")} placeholder="Description" className="form-control mb-2"/>
+        <input type="file" {...register("movie_image")} multiple className="form-control mb-3"/>
 
-            <div className="mb-3">
-              <input  type="text"  className="form-control"  {...register("title")}  placeholder="Enter title"/>
-            </div>
+        <button className="btn btn-success">
+          {editId ? "Update Movie" : "Add Movie"}
+        </button>
+      </form>
 
-            <div className="mb-3">
-              <input type="file" className="form-control" {...register("task_image")} accept="image/*" multiple />
-            </div>
-           
-              <button className="btn btn-primary w-100" type="submit"> submit</button>
-             
-            
-          </form>
-        </div>
-      </div>
-      <br />
-      <table className="table table-bordered table-success">
+      <table className="table mt-5">
         <thead>
           <tr>
-            <th>#</th>
-            <th>title</th>
-            <th>category</th>
-            <th>image</th>
-            <th>createdAt</th>
-            <th>updatedAt</th>
+            <th>Title</th>
+            <th>Director</th>
+            <th>Rating</th>
+            <th>Images</th>
             <th>Action</th>
           </tr>
         </thead>
-
         <tbody>
-          {taskList &&
-            taskList.map((task, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{task.category}</td>
-                <td>{task.title}</td>
-                {/* <td>
-                  {
-                    task.task_image.map((ele,index)=>(
-                      <img key={index} className="p-3" src={`${import.meta.env.VITE_IMAGE_URL}/${ele}`}  width="80"  height="80"  alt="" />
-                    ))
-                  }
-                </td> */}
-                {console.log(task.task_image)}
-                <ImageList images={task.task_image}/>
-                <td>{formatDate(task.createdAt)}</td>
-                <td>{formatDate(task.updatedAt)}</td>
-                <td className="text-center">
-                  <button className="btn btn-danger btn-sm me-2 p-3 mt-2" onClick={() => trash(task._id)}>delete</button>
-                  <button className="btn btn-warning btn-sm p-3 mt-2" onClick={() => update(task._id)}>update</button>
-                </td>
-              </tr>
-            ))}
+          {movieList.map((m) => (
+            <tr key={m._id}>
+              <td>{m.title}</td>
+              <td>{m.director}</td>
+              <td>{m.rating}</td>
+              <ImageList images={m.movie_image} />
+              <td>
+                <button onClick={() => editMovie(m)} className="btn btn-warning btn-sm me-2">Edit</button>
+                <button onClick={() => deleteMovie(m._id)} className="btn btn-danger btn-sm">Delete</button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
-    </>
+    </div>
   );
 };
 

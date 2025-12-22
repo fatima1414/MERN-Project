@@ -1,28 +1,16 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
-const PORT = process.env.PORT || 8000;
-
 require("./config/db")();
-const cors = require("cors");
 
+const cors = require("cors");
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
+app.use("/profile", express.static("uploads"));
 
-// app.use('/uploads',express.static('uploads'))
-app.use('/profile',express.static('uploads'))
+const movieRoute = require("./routes/movieRoute");
+app.use("/api", movieRoute);
 
-app.get("/", (req, res) => {
-  res.send("server created");
-});
-
-// ...........import routing..........//
-const taskRoute = require("./routes/taskRoute");
-const BlogRoute = require("./routes/blog.route");
-
-// .......setup api roting...........//+
-app.use("/api/task", taskRoute);
-app.use("/api/blog", BlogRoute);
-
-app.listen(PORT, () => console.log(`sever connected http://localhost:${PORT}`));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

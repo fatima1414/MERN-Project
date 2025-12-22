@@ -2,12 +2,11 @@ const ImageList = ({ images }) => (
   <td>
     {images?.map((img, i) => (
       <img
-        key={img}
-        className="p-3"
+        key={i}
         src={`${import.meta.env.VITE_IMAGE_URL}/${img}`}
-        width="120"
-        height="100"
-        alt=""
+        width="60"
+        height="60"
+        className="rounded-circle me-1"
       />
     ))}
   </td>
