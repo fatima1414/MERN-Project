@@ -1,5 +1,6 @@
 // const { store } = require('../controllers/blog.controller')
 const BlogController = require("../controllers/blog.controller");
+const { verifAuth } = require("../middleware/verify");
 const upload = require("../utils/upload");
 const router = require('express').Router();
 
@@ -10,13 +11,13 @@ const router = require('express').Router();
 
 router
 .route('/')
-.post(upload.single('b_image'),BlogController.store)
-.get(BlogController.index)
+.post(upload.single('b_image'),verifAuth,BlogController.store)
+.get(verifAuth,BlogController.index)
 .put(upload.single('b_image'),BlogController.update)
 
 
 
-router.route('/:id')
-.delete(BlogController.trash)
+// router.route('/:id')
+// .delete(BlogController.trash)
 
 module.exports = router     
